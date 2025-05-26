@@ -1,4 +1,7 @@
-﻿using System.Security.Cryptography.X509Certificates;
+﻿using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Security.Cryptography.X509Certificates;
 using clanoviIGrupe.Models;
 
 namespace clanoviIGrupe.Repositories
@@ -28,6 +31,7 @@ namespace clanoviIGrupe.Repositories
                 string ime = attributes[2];
                 string prezime = attributes[3];
                 DateTime datumRodjenja = DateTime.Parse(attributes[4]);
+
                 Korisnik korisnik = new Korisnik(id, korisnickoIme, ime, prezime, datumRodjenja);
                 Data[id] = korisnik;
 
