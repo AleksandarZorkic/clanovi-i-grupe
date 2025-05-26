@@ -1,0 +1,6 @@
+@clanoviIGrupe_HostAddress = http://localhost:5102
+
+GET {{clanoviIGrupe_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
