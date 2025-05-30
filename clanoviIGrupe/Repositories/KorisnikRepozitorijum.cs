@@ -1,50 +1,91 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.IO;
-using System.Security.Cryptography.X509Certificates;
 using clanoviIGrupe.Models;
+using Microsoft.AspNetCore.CookiePolicy;
+using Microsoft.Data.Sqlite;
+
 
 namespace clanoviIGrupe.Repositories
 {
     public class KorisnikRepozitorijum
     {
-        private const string filePath = "data/korisnici.csv";
-        public static Dictionary<int, Korisnik> Data;
-
-        public KorisnikRepozitorijum()
+        string putanja = "Data Source=database/mydatabase.db";
+        public List<Korisnik> GetFromDataBase()
         {
-            if (Data == null)
+            List<Korisnik> korisnici = new List<Korisnik>();
+            using SqliteConnection connection = new SqliteConnection(putanja);
+            connection.Open();
+
+            string queryGet = "SELECT Id, Username, Name, Surname, Birthday FROM Users";
+            using SqliteCommand command = new SqliteCommand(queryGet, connection);
+
+            using SqliteDataReader reader = command.ExecuteReader();
+
+            while (reader.Read())
             {
-                Load();
+                int id = Convert.ToInt32(reader["Id"]);
+                string korisnickoIme = reader["Username"].ToString();
+                string ime = reader["Name"].ToString();
+                string prezime = reader["Surname"].ToString();
+                DateTime rodjendan = DateTime.Parse(reader["Birthday"].ToString());
+
+                Korisnik korisnik = new Korisnik(id, korisnickoIme, ime, prezime, rodjendan);
+                korisnici.Add(korisnik);
             }
+            return korisnici;
         }
 
-        private void Load()
+        public Korisnik AddToDatabase (Korisnik k)
         {
-            Data = new Dictionary<int, Korisnik>();
-            string[] lines = File.ReadAllLines(filePath);
-            foreach (string line in lines)
-            {
-                string[] attributes = line.Split(',');
-                int id = int.Parse(attributes[0]);
-                string korisnickoIme = attributes[1];
-                string ime = attributes[2];
-                string prezime = attributes[3];
-                DateTime datumRodjenja = DateTime.Parse(attributes[4]);
+            using SqliteConnection conncetion = new SqliteConnection(putanja);
+            conncetion.Open();
 
-                Korisnik korisnik = new Korisnik(id, korisnickoIme, ime, prezime, datumRodjenja);
-                Data[id] = korisnik;
+            string queryAdd = @"
+                INSERT INTO Users (Username, Name, Surname, Birthday) 
+                VALUES ($u, $n, $s, $b);
+            ";
+            SqliteCommand command = new SqliteCommand(queryAdd, conncetion);
+            command.Parameters.AddWithValue("$u", k.KorisnickoIme);
+            command.Parameters.AddWithValue("$n", k.Ime);
+            command.Parameters.AddWithValue("$s", k.Prezime);
+            command.Parameters.AddWithValue("$b", k.DatumRodjenja.ToString("yyyy-MM-dd"));
+            command.ExecuteNonQuery();
 
-            }
+            using var idCmd = conncetion.CreateCommand();
+            idCmd.CommandText = "SELECT last_insert_rowid();";
+            long newId = (long)idCmd.ExecuteScalar();
+            k.Id = (int)newId;
+
+            return k;
         }
-        public void Save()
+
+        public Korisnik? UpdateInDatabase (int id, Korisnik k)
         {
-            List<string> linije = new List<string>();
-            foreach(Korisnik k in Data.Values)
-            {
-                linije.Add($"{k.Id},{k.KorisnickoIme},{k.Ime},{k.Prezime},{k.DatumRodjenja:yyyy-MM-dd}");
-            }
-            File.WriteAllLines(filePath, linije);
+            using SqliteConnection connection = new SqliteConnection(putanja);
+            connection.Open();
+
+            string queryUpdate = @"
+                UPDATE Users 
+                SET 
+                    Username = $u, 
+                    Name = $n, 
+                    Surname = $s, 
+                    Birthday = $b 
+                WHERE Id = $i;
+            ";
+            using SqliteCommand command = new SqliteCommand(queryUpdate, connection);
+            command.Parameters.AddWithValue("$u", k.KorisnickoIme);
+            command.Parameters.AddWithValue("$n", k.Ime);
+            command.Parameters.AddWithValue("$s", k.Prezime);
+            command.Parameters.AddWithValue("$b", k.DatumRodjenja.ToString("yyyy-MM-dd"));
+            command.Parameters.AddWithValue("$i", id);
+
+            int promena = command.ExecuteNonQuery();
+            if (promena == 0)
+                return null;
+
+            k.Id = id;
+            return k;
         }
     }
 }

@@ -2,6 +2,8 @@
 using clanoviIGrupe.Repositories;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using System.Linq;
+
 
 namespace clanoviIGrupe.Controllers
 {
@@ -9,24 +11,25 @@ namespace clanoviIGrupe.Controllers
     [ApiController]
     public class KorisniciKontroler : ControllerBase
     {
-        private KorisnikRepozitorijum korisnikRepozitorijum = new KorisnikRepozitorijum();
-        private GrupaRepozitorijum grupaRepozitorijum = new GrupaRepozitorijum();
+        private readonly KorisnikRepozitorijum korisnikRepozitorijum = new();
+        private readonly GrupaRepozitorijum grupaRepozitorijum = new();
 
         [HttpGet]
-        public ActionResult<List<Korisnik>> getAll()
+        public ActionResult<List<Korisnik>> GetAll()
         {
-            List<Korisnik> korisnici = KorisnikRepozitorijum.Data.Values.ToList();
+            var korisnici = korisnikRepozitorijum.GetFromDataBase();
             return Ok(korisnici);
         }
 
         [HttpGet("{id}")]
-        public ActionResult<Korisnik> getById(int id)
+        public ActionResult<Korisnik> GetById(int id)
         {
-            if (!KorisnikRepozitorijum.Data.ContainsKey(id))
+            var korisnik = korisnikRepozitorijum.GetFromDataBase().FirstOrDefault(k =>  k.Id == id);
+
+            if (korisnik == null)
             {
                 return NotFound();
             }
-            var korisnik = KorisnikRepozitorijum.Data[id];
             return Ok(korisnik);
         }
 
@@ -38,11 +41,9 @@ namespace clanoviIGrupe.Controllers
                 return BadRequest();
             }
 
-            noviKorisnik.Id = SracunajNoviID(KorisnikRepozitorijum.Data.Keys.ToList());
-            KorisnikRepozitorijum.Data[noviKorisnik.Id] = noviKorisnik;
-            korisnikRepozitorijum.Save();
-            
-            return Ok(noviKorisnik);
+            var dodat = korisnikRepozitorijum.AddToDatabase(noviKorisnik);
+            return CreatedAtAction(nameof(GetById), new {Id = dodat.Id}, dodat);
+
         }
 
         [HttpPut("{id}")]
@@ -52,33 +53,14 @@ namespace clanoviIGrupe.Controllers
             {
                 return BadRequest();
             }
-            if (!KorisnikRepozitorijum.Data.ContainsKey(id))
+
+            var updated = korisnikRepozitorijum.UpdateInDatabase(id, uKorisnik);
+            if (updated == null)
             {
                 return NotFound();
             }
 
-            Korisnik korisnik = KorisnikRepozitorijum.Data[id];
-            korisnik.KorisnickoIme = uKorisnik.KorisnickoIme;
-            korisnik.Ime = uKorisnik.Ime;
-            korisnik.Prezime = uKorisnik.Prezime;
-            korisnik.DatumRodjenja = uKorisnik.DatumRodjenja;
-            korisnikRepozitorijum.Save();
-
-            return Ok(korisnik);
+            return Ok(updated);
         }
-
-        private int SracunajNoviID(List<int> identifikatori)
-        {
-            int maxId = 0;
-            foreach (int id in identifikatori)
-            {
-                if (maxId < id)
-                {
-                    maxId = id;
-                }
-            }
-            return maxId + 1;
-        }
-
     }
 }
