@@ -5,15 +5,16 @@
     "version": "1.0"
   },
   "paths": {
-    "/api/grupe/{grupeId}/korisnici/{korisnikId}": {
+    "/api/grupe/{grupaId}/korisnici/{korisnikId}": {
       "get": {
         "tags": [
-          "GrupaKorisnici"
+          "GrupeKontroler"
         ],
         "parameters": [
           {
             "name": "grupaId",
-            "in": "query",
+            "in": "path",
+            "required": true,
             "schema": {
               "type": "integer",
               "format": "int32"
@@ -27,14 +28,6 @@
               "type": "integer",
               "format": "int32"
             }
-          },
-          {
-            "name": "grupeId",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "string"
-            }
           }
         ],
         "responses": {
@@ -43,26 +36,17 @@
             "content": {
               "text/plain": {
                 "schema": {
-                  "type": "array",
-                  "items": {
-                    "$ref": "#/components/schemas/Grupa"
-                  }
+                  "$ref": "#/components/schemas/Korisnik"
                 }
               },
               "application/json": {
                 "schema": {
-                  "type": "array",
-                  "items": {
-                    "$ref": "#/components/schemas/Grupa"
-                  }
+                  "$ref": "#/components/schemas/Korisnik"
                 }
               },
               "text/json": {
                 "schema": {
-                  "type": "array",
-                  "items": {
-                    "$ref": "#/components/schemas/Grupa"
-                  }
+                  "$ref": "#/components/schemas/Korisnik"
                 }
               }
             }

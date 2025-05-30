@@ -1,8 +1,8 @@
 [
   {
-    "ContainingType": "clanoviIGrupe.Controllers.GrupaKorisnici",
+    "ContainingType": "clanoviIGrupe.Controllers.GrupeKontroler",
     "Method": "GetSpecificUser",
-    "RelativePath": "api/grupe/{grupeId}/korisnici/{korisnikId}",
+    "RelativePath": "api/grupe/{grupaId}/korisnici/{korisnikId}",
     "HttpMethod": "GET",
     "IsController": true,
     "Order": 0,
@@ -10,22 +10,17 @@
       {
         "Name": "grupaId",
         "Type": "System.Int32",
-        "IsRequired": false
+        "IsRequired": true
       },
       {
         "Name": "korisnikId",
         "Type": "System.Int32",
         "IsRequired": true
-      },
-      {
-        "Name": "grupeId",
-        "Type": "",
-        "IsRequired": true
       }
     ],
     "ReturnTypes": [
       {
-        "Type": "System.Collections.Generic.List\u00601[[clanoviIGrupe.Models.Grupa, clanoviIGrupe, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]",
+        "Type": "clanoviIGrupe.Models.Korisnik",
         "MediaTypes": [
           "text/plain",
           "application/json",
