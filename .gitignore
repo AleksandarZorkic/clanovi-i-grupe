@@ -272,3 +272,10 @@ __pycache__/
 # tools/
 
 # End of https://www.toptal.com/developers/gitignore/api/aspnetcore
+
+/clanoviIGrupe/bin/
+/clanoviIGrupe/obj/
+/clanoviIGrupe/database/
+*.sln.user
+*.user
+*.suo
