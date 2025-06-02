@@ -1,4 +1,5 @@
-﻿using ClanstvoIGrupa_Dva.Models;
+﻿using System.Xml.Linq;
+using ClanstvoIGrupa_Dva.Models;
 using Microsoft.Data.Sqlite;
 
 namespace ClanstvoIGrupa_Dva.Repository
@@ -40,7 +41,8 @@ namespace ClanstvoIGrupa_Dva.Repository
             {
                 using SqliteConnection connection = new SqliteConnection(putanja);
                 connection.Open();
-                string query = @"SELECT Id, Username, Name, Surname, Birthday 
+                string query = @"
+                     SELECT Id, Username, Name, Surname, Birthday 
                      FROM Users 
                      WHERE Id = $Id";
 
@@ -62,7 +64,75 @@ namespace ClanstvoIGrupa_Dva.Repository
                 return null;
             });
         }
+        public Korisnik Create(string username, string name, string surname, string birthday)
+        {
+            return ExecuteWithHandling(() =>
+            {
+                using SqliteConnection connection = new SqliteConnection(putanja);
+                connection.Open();
 
+                string query = @"
+                    INSERT INTO Users (Username, Name, Surname, Birthday)
+                    VALUES (@Username, @Name, @Surname, @Birthday);
+                    SELECT LAST_INSERT_ROWID()";
+
+                using SqliteCommand command = new SqliteCommand(query, connection);
+
+                command.Parameters.AddWithValue("@Username", username);
+                command.Parameters.AddWithValue("@Name", name);
+                command.Parameters.AddWithValue("@Surname", surname);
+                DateTime dateOfbirth = DateTime.Parse(birthday);
+                command.Parameters.AddWithValue("@Birthday", dateOfbirth.ToString("yyyy-MM-dd"));
+
+                int lastInsertedId = Convert.ToInt32(command.ExecuteScalar());
+                Korisnik noviKorisnik = new Korisnik(lastInsertedId, username, name, surname, dateOfbirth);
+
+                return noviKorisnik;
+            });
+        } 
+        public bool Update (Korisnik korisnik) 
+        {
+            return ExecuteWithHandling(() =>
+            {
+                using SqliteConnection connection = new SqliteConnection(putanja);
+                connection.Open();
+
+                string query = @"
+                    UPDATE Users
+                    SET Username = @Username,
+                    Name     = @Name,
+                    Surname  = @Surname,
+                    Birthday = @Birthday
+                    WHERE Id = @Id";
+
+                using SqliteCommand command = new SqliteCommand(query, connection);
+
+                command.Parameters.AddWithValue("@Username", korisnik.KorisnickoIme);
+                command.Parameters.AddWithValue("@Name", korisnik.Ime);
+                command.Parameters.AddWithValue("@Surname", korisnik.Prezime);
+                command.Parameters.AddWithValue("@Birthday", korisnik.DatumRodjenja.ToString("yyyy-MM-dd"));
+                command.Parameters.AddWithValue("@Id", korisnik.Id);
+
+                int promena = command.ExecuteNonQuery();
+
+                return promena > 0;
+            });
+        }
+        public bool Delete (Korisnik korisnik)
+        {
+            return ExecuteWithHandling(() =>
+            {
+                using SqliteConnection connection = new SqliteConnection(putanja);
+                connection.Open();
+                string query = "DELETE FROM Users WHERE Id = @Id";
+                using SqliteCommand command = new SqliteCommand(query, connection);
+
+                command.Parameters.AddWithValue("@Id", korisnik.Id);
+
+                int removed = command.ExecuteNonQuery();
+                return removed > 0;
+            });
+        }
         private T ExecuteWithHandling<T>(Func<T> operation)
         {
             try
@@ -90,7 +160,6 @@ namespace ClanstvoIGrupa_Dva.Repository
                 return default!;
             }
         }
-
         private void ExecuteWithHandling(Action action)
         {
             try
