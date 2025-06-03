@@ -1,5 +1,6 @@
 ﻿using System.Xml.Linq;
 using ClanstvoIGrupa_Dva.Models;
+using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.Data.Sqlite;
 
 namespace ClanstvoIGrupa_Dva.Repository
@@ -11,7 +12,7 @@ namespace ClanstvoIGrupa_Dva.Repository
         {
             connectionString = configuration["ConnectionString:SQLiteConnection"];
         }
-        public List<Korisnik> GetAll()
+        public List<Korisnik> GetAll(int page, int pageSize)
         {
             return ExecuteWithHandling(() =>
             {
@@ -19,8 +20,10 @@ namespace ClanstvoIGrupa_Dva.Repository
                 using SqliteConnection connection = new SqliteConnection(connectionString);
                 connection.Open();
 
-                string queryGet = "SELECT Id, Username, Name, Surname, Birthday FROM Users";
+                string queryGet = "SELECT Id, Username, Name, Surname, Birthday FROM Users LIMIT @pageSize OFFSET @offset";
                 using SqliteCommand command = new SqliteCommand(queryGet, connection);
+                command.Parameters.AddWithValue("@pageSize", page);
+                command.Parameters.AddWithValue("@offset", pageSize * (page - 1));
 
                 using SqliteDataReader reader = command.ExecuteReader();
 
@@ -135,6 +138,19 @@ namespace ClanstvoIGrupa_Dva.Repository
 
                 int removed = command.ExecuteNonQuery();
                 return removed > 0;
+            });
+        }
+        public int CountAll()
+        {
+            return ExecuteWithHandling(() =>
+            {
+                using SqliteConnection connection = new SqliteConnection(connectionString);
+                connection.Open();
+
+                string query = "SELECT COUNT(*) FROM Users";
+                using SqliteCommand command = new SqliteCommand(query, connection);
+                var totalCount = Convert.ToInt32(command.ExecuteScalar());
+                return totalCount;                
             });
         }
         private T ExecuteWithHandling<T>(Func<T> operation)

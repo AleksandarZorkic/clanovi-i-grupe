@@ -18,12 +18,23 @@ namespace ClanstvoIGrupa_Dva.Controllers
         }
 
         [HttpGet]
-        public ActionResult<List<Korisnik>> GetAll()
+        public ActionResult<List<Korisnik>> GetAll([FromQuery] int page = 1, [FromQuery] int pageSize = 2)
         {
+            if (page < 1 || pageSize < 1)
+            {
+                return BadRequest("Page i pageSize moraju biti veci od nula.");
+            }
             try
             {
-                var korisnici = UserDbRepository.GetAll();
-                return Ok(korisnici);
+                var korisnici = UserDbRepository.GetAll(page, pageSize);
+                int totalCount = UserDbRepository.CountAll();
+
+                Object result = new
+                {
+                    Data = korisnici,
+                    TotalCount = totalCount
+                };
+                return Ok(result);
             }
             catch (Exception ex)
             {
