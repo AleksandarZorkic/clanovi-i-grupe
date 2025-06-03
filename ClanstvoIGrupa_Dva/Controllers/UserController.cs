@@ -10,64 +10,104 @@ namespace ClanstvoIGrupa_Dva.Controllers
     [ApiController]
     public class UserController : ControllerBase
     {
-        private readonly UserDbRepository UserDbRepository = new();
+        private readonly UserDbRepository UserDbRepository;
+
+        public UserController(UserDbRepository userDbRepository)
+        {
+            this.UserDbRepository = userDbRepository;
+        }
 
         [HttpGet]
         public ActionResult<List<Korisnik>> GetAll()
         {
-            var korisnici = UserDbRepository.GetAll();
-            return Ok(korisnici);
+            try
+            {
+                var korisnici = UserDbRepository.GetAll();
+                return Ok(korisnici);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"Dogodila se greska: {ex.Message}");
+            }
         }
 
         [HttpGet("{id}")]
         public ActionResult<Korisnik> GetById(int id)
         {
-            var korisnik = UserDbRepository.GetById(id);
-
-            if (korisnik == null)
+            try
             {
-                return NotFound();
+                var korisnik = UserDbRepository.GetById(id);
+
+                if (korisnik == null)
+                {
+                    return NotFound();
+                }
+                return Ok(korisnik);
             }
-            return Ok();
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"Dogodila se greska: {ex.Message}");
+            }
         }
         [HttpPost]
-        public ActionResult<Korisnik> Create(int id, [FromBody] Korisnik noviKorisnik)
+        public ActionResult<Korisnik> Create([FromBody] Korisnik noviKorisnik)
         {
-            var korisnik = UserDbRepository.Create(noviKorisnik.KorisnickoIme, noviKorisnik.Ime, noviKorisnik.Prezime, noviKorisnik.DatumRodjenja.ToString("yyyy-MM-dd"));
-
-            if (korisnik == null)
+            try
             {
-                return BadRequest();
+                var korisnik = UserDbRepository.Create(noviKorisnik.KorisnickoIme, noviKorisnik.Ime, noviKorisnik.Prezime, noviKorisnik.DatumRodjenja.ToString("yyyy-MM-dd"));
+
+                if (korisnik == null)
+                {
+                    return BadRequest();
+                }
+                return CreatedAtAction(nameof(GetById), new { id = korisnik.Id }, korisnik);
             }
-            return CreatedAtAction(nameof(GetById), new { id = korisnik.Id }, korisnik);
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"Dogodila se greska: {ex.Message}");
+            }
         }
         [HttpPut("{id}")]
         public ActionResult<Korisnik> Update(int id, [FromBody] Korisnik korisnik)
         {
-            if (korisnik.Id != 0 && korisnik.Id != id) 
-                return BadRequest();
+            try
+            {
+                if (korisnik.Id != 0 && korisnik.Id != id)
+                    return BadRequest();
 
-            korisnik.Id = id;
+                korisnik.Id = id;
 
-            bool uspesnaPromena = UserDbRepository.Update(korisnik);
+                bool uspesnaPromena = UserDbRepository.Update(korisnik);
 
-            if (!uspesnaPromena)
-                return NotFound();
+                if (!uspesnaPromena)
+                    return NotFound();
 
-            return NoContent();
+                return NoContent();
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"Dogodila se greska: {ex.Message}");
+            }
         }
         [HttpDelete("{id}")]
-        public ActionResult<Korisnik> Delete(int id, [FromBody] Korisnik korisnik)
+        public ActionResult<Korisnik> Delete(int id)
         {
-            if(korisnik.Id != 0 && korisnik.Id != id)
+            try
             {
-                return NotFound();
+                var kotisnik = UserDbRepository.GetById(id);
+                if (kotisnik == null)
+                    return NotFound();
+
+                bool deleted = UserDbRepository.Delete(kotisnik);
+                if (!deleted)
+                    return NotFound();
+
+                return NoContent();
             }
-
-            korisnik.Id = id;
-            bool deleted = UserDbRepository.Delete(korisnik);
-
-            return NoContent();
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"Dogodila se greska: {ex.Message}");
+            }
         }
     }
 }

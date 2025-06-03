@@ -51,7 +51,7 @@ namespace ClanstvoIGrupa_Dva.Repository
                      WHERE Id = $Id";
 
                 using SqliteCommand command = new SqliteCommand(query, connection);
-                command.Parameters.AddWithValue("Id", id);
+                command.Parameters.AddWithValue("$Id", id);
 
                 using SqliteDataReader reader = command.ExecuteReader();
 

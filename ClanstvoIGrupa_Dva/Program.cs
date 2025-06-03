@@ -1,4 +1,6 @@
 
+using ClanstvoIGrupa_Dva.Repository;
+
 namespace ClanstvoIGrupa_Dva
 {
     public class Program
@@ -13,6 +15,8 @@ namespace ClanstvoIGrupa_Dva
             // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
             builder.Services.AddEndpointsApiExplorer();
             builder.Services.AddSwaggerGen();
+            builder.Services.AddScoped<UserDbRepository>();
+
 
             var app = builder.Build();
 
