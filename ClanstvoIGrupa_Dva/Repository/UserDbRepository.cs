@@ -6,13 +6,17 @@ namespace ClanstvoIGrupa_Dva.Repository
 {
     public class UserDbRepository
     {
-        string putanja = "Data Source=database/mydatabase.db";
+        private readonly string connectionString;
+        public UserDbRepository(IConfiguration configuration) 
+        {
+            connectionString = configuration["ConnectionString:SQLiteConnection"];
+        }
         public List<Korisnik> GetAll()
         {
             return ExecuteWithHandling(() =>
             {
                 List<Korisnik> korisnici = new List<Korisnik>();
-                using SqliteConnection connection = new SqliteConnection(putanja);
+                using SqliteConnection connection = new SqliteConnection(connectionString);
                 connection.Open();
 
                 string queryGet = "SELECT Id, Username, Name, Surname, Birthday FROM Users";
@@ -39,7 +43,7 @@ namespace ClanstvoIGrupa_Dva.Repository
         {
             return ExecuteWithHandling(() =>
             {
-                using SqliteConnection connection = new SqliteConnection(putanja);
+                using SqliteConnection connection = new SqliteConnection(connectionString);
                 connection.Open();
                 string query = @"
                      SELECT Id, Username, Name, Surname, Birthday 
@@ -68,7 +72,7 @@ namespace ClanstvoIGrupa_Dva.Repository
         {
             return ExecuteWithHandling(() =>
             {
-                using SqliteConnection connection = new SqliteConnection(putanja);
+                using SqliteConnection connection = new SqliteConnection(connectionString);
                 connection.Open();
 
                 string query = @"
@@ -94,7 +98,7 @@ namespace ClanstvoIGrupa_Dva.Repository
         {
             return ExecuteWithHandling(() =>
             {
-                using SqliteConnection connection = new SqliteConnection(putanja);
+                using SqliteConnection connection = new SqliteConnection(connectionString);
                 connection.Open();
 
                 string query = @"
@@ -122,7 +126,7 @@ namespace ClanstvoIGrupa_Dva.Repository
         {
             return ExecuteWithHandling(() =>
             {
-                using SqliteConnection connection = new SqliteConnection(putanja);
+                using SqliteConnection connection = new SqliteConnection(connectionString);
                 connection.Open();
                 string query = "DELETE FROM Users WHERE Id = @Id";
                 using SqliteCommand command = new SqliteCommand(query, connection);
@@ -142,45 +146,22 @@ namespace ClanstvoIGrupa_Dva.Repository
             catch (SqliteException ex)
             {
                 Console.WriteLine($"Greška pri konekciji ili neispravnom SQL upitu: {ex.Message}");
-                return default!;
+                throw;
             }
             catch (FormatException ex)
             {
                 Console.WriteLine($"Greška u konverziji podataka iz baze: {ex.Message}");
-                return default!;
+                throw;
             }
             catch (InvalidOperationException ex)
             {
                 Console.WriteLine($"Neispravna operacija nad konekcijom: {ex.Message}");
-                return default!;
+                throw;
             }
             catch (Exception ex)
             {
                 Console.WriteLine($"Neočekivana greška: {ex.Message}");
-                return default!;
-            }
-        }
-        private void ExecuteWithHandling(Action action)
-        {
-            try
-            {
-                action();
-            }
-            catch (SqliteException ex)
-            {
-                Console.WriteLine($"Greška pri konekciji ili neispravnom SQL upitu: {ex.Message}");
-            }
-            catch (FormatException ex)
-            {
-                Console.WriteLine($"Greška u konverziji podataka iz baze: {ex.Message}");
-            }
-            catch (InvalidOperationException ex)
-            {
-                Console.WriteLine($"Neispravna operacija nad konekcijom: {ex.Message}");
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"Neočekivana greška: {ex.Message}");
+                throw;
             }
         }
     }
