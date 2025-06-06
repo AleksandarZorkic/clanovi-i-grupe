@@ -34,9 +34,9 @@ namespace ClanstvoIGrupa_Dva.Controllers
             {
                 return StatusCode(500, $"Dogodila se greska: {ex.Message}");
             }
-        } 
+        }
         [HttpPost]
-        public ActionResult Create ([FromBody] Post post)
+        public ActionResult Create([FromBody] Post post)
         {
             if (post == null || post.UserId == null
             || post.UserId <= 0
@@ -48,11 +48,29 @@ namespace ClanstvoIGrupa_Dva.Controllers
             try
             {
                 var kreirana = postDbRepository.Create(post.UserId.Value, post.Content);
-                return Created($"/api/posts/{kreirana.Id}",kreirana);
+                return Created($"/api/posts/{kreirana.Id}", kreirana);
             }
             catch (Exception ex)
             {
                 return StatusCode(500, $"Dogodila se greska prilikom kreiranja objave: {ex.Message}");
+            }
+        }
+
+        [HttpDelete("{id}")]
+        public ActionResult Delete(int id)
+        {
+            try
+            {
+                bool deleted = postDbRepository.Delete(id);
+
+                if (!deleted)
+                    return NotFound();
+
+                return NoContent();
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"Dogodila se greska prilikom brisanja objave: {ex.Message}");
             }
         }
     }

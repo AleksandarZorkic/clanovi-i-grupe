@@ -114,6 +114,23 @@ namespace ClanstvoIGrupa_Dva.Repository
                 return newPost;
             });
         }
+        public bool Delete (int postId)
+        {
+            return ExecuteWithHandling(() =>
+            {
+                using SqliteConnection connection = new SqliteConnection(connectionString);
+                connection.Open();
+                string query = "DELETE FROM Posts WHERE Id = @Id";
+                using SqliteCommand command = new SqliteCommand(query, connection);
+
+                command.Parameters.AddWithValue("@Id", postId);
+
+                int removed = command.ExecuteNonQuery();
+
+                return removed > 0;
+
+            });
+        }
 
         private T ExecuteWithHandling<T>(Func<T> operation)
         {
