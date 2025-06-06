@@ -82,6 +82,38 @@ namespace ClanstvoIGrupa_Dva.Repository
                 return postovi;
             });
         }
+        public Post Create(int userId, string content)
+        {
+            return ExecuteWithHandling(() =>
+            {
+                using SqliteConnection connection = new SqliteConnection(connectionString);
+                connection.Open();
+
+                string query = @"
+                        INSERT INTO Posts (UserId, Content, Date)
+                        VALUES (@UserId, @Content, @Date);
+                        SELECT LAST_INSERT_ROWID();
+                ";
+                using SqliteCommand command = new SqliteCommand(query, connection);
+                command.Parameters.AddWithValue("@UserId", userId);
+                command.Parameters.AddWithValue("@Content", content);
+                string dateTime = DateTime.UtcNow.ToString("yyyy-MM-dd");
+                command.Parameters.AddWithValue("@Date", dateTime);
+                int lastInsertedId = Convert.ToInt32(command.ExecuteScalar());
+
+
+                Post newPost = new Post
+                {
+                    Id = lastInsertedId,
+                    UserId = userId,
+                    Content = content,
+                    Date = DateTime.Parse(dateTime),
+                    Author = _userRepo.GetById(userId)
+                };
+
+                return newPost;
+            });
+        }
 
         private T ExecuteWithHandling<T>(Func<T> operation)
         {

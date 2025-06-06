@@ -35,5 +35,25 @@ namespace ClanstvoIGrupa_Dva.Controllers
                 return StatusCode(500, $"Dogodila se greska: {ex.Message}");
             }
         } 
+        [HttpPost]
+        public ActionResult Create ([FromBody] Post post)
+        {
+            if (post == null || post.UserId == null
+            || post.UserId <= 0
+            || string.IsNullOrWhiteSpace(post.Content))
+            {
+                return BadRequest("Morate poslati vazeci UserId i ne-prazan content.");
+            }
+
+            try
+            {
+                var kreirana = postDbRepository.Create(post.UserId.Value, post.Content);
+                return Created($"/api/posts/{kreirana.Id}",kreirana);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"Dogodila se greska prilikom kreiranja objave: {ex.Message}");
+            }
+        }
     }
 }

@@ -60,6 +60,7 @@ namespace ClanstvoIGrupa_Dva.Controllers
                 return StatusCode(500, $"Dogodila se greska: {ex.Message}");
             }
         }
+
         [HttpPost]
         public ActionResult<Korisnik> Create([FromBody] Korisnik noviKorisnik)
         {
@@ -78,6 +79,7 @@ namespace ClanstvoIGrupa_Dva.Controllers
                 return StatusCode(500, $"Dogodila se greska: {ex.Message}");
             }
         }
+
         [HttpPut("{id}")]
         public ActionResult<Korisnik> Update(int id, [FromBody] Korisnik korisnik)
         {
